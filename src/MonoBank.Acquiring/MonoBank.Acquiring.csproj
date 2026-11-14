@@ -11,7 +11,7 @@
     <Authors>ConstantinOr</Authors>
     <Company>ConstantinOr</Company>
     <Description>Full-featured .NET client for the monobank acquiring API (invoices, QR, wallet, subscriptions, webhooks).</Description>
-    <PackageId>MonoBank.Acquiring</PackageId>
+    <PackageId>MonoBankAcquiring</PackageId>
     <PackageTags>monobank;acquiring;payments;fintech;ukraine;dotnet;csharp;webhook</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/ConstantinOr/monobank-acquiring-dotnet</PackageProjectUrl>

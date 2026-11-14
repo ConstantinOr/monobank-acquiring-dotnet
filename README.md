@@ -4,8 +4,8 @@ Unofficial .NET SDK for Monobank Acquiring API. Create invoices, use hosted chec
 
 Not affiliated with monobank.
 
-[![NuGet](https://img.shields.io/nuget/v/MonoBank.Acquiring.svg?style=flat-square)](https://www.nuget.org/packages/MonoBank.Acquiring)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/MonoBank.Acquiring.svg?style=flat-square)](https://www.nuget.org/packages/MonoBank.Acquiring)
+[![NuGet](https://img.shields.io/nuget/v/MonoBankAcquiring.svg?style=flat-square)](https://www.nuget.org/packages/MonoBankAcquiring)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/MonoBankAcquiring.svg?style=flat-square)](https://www.nuget.org/packages/MonoBankAcquiring)
 [![Build](https://img.shields.io/github/actions/workflow/status/ConstantinOr/monobank-acquiring-dotnet/ci.yml?branch=main&style=flat-square&label=build)](https://github.com/ConstantinOr/monobank-acquiring-dotnet/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 
@@ -26,7 +26,7 @@ Also covers wallets, subscriptions, split, POS, and T2P — one `MonoAcquiringCl
 ### Install
 
 ```bash
-dotnet add package MonoBank.Acquiring
+dotnet add package MonoBankAcquiring
 ```
 
 ### Run in one minute
@@ -118,7 +118,7 @@ GitHub Actions builds, tests, and packs on every push; tags `v*` publish a GitHu
 
 - [Acquiring API](https://monobank.ua/api-docs/acquiring)
 - [Invoice create](https://monobank.ua/api-docs/acquiring/methods/ia/post--api--merchant--invoice--create)
-- [NuGet](https://www.nuget.org/packages/MonoBank.Acquiring)
+- [NuGet](https://www.nuget.org/packages/MonoBankAcquiring)
 - [Release v1.0.0](https://github.com/ConstantinOr/monobank-acquiring-dotnet/releases/tag/v1.0.0)
 
 ---
@@ -129,8 +129,8 @@ GitHub Actions builds, tests, and packs on every push; tags `v*` publish a GitHu
 
 Не афілійовано з monobank.
 
-[![NuGet](https://img.shields.io/nuget/v/MonoBank.Acquiring.svg?style=flat-square)](https://www.nuget.org/packages/MonoBank.Acquiring)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/MonoBank.Acquiring.svg?style=flat-square)](https://www.nuget.org/packages/MonoBank.Acquiring)
+[![NuGet](https://img.shields.io/nuget/v/MonoBankAcquiring.svg?style=flat-square)](https://www.nuget.org/packages/MonoBankAcquiring)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/MonoBankAcquiring.svg?style=flat-square)](https://www.nuget.org/packages/MonoBankAcquiring)
 [![Build](https://img.shields.io/github/actions/workflow/status/ConstantinOr/monobank-acquiring-dotnet/ci.yml?branch=main&style=flat-square&label=build)](https://github.com/ConstantinOr/monobank-acquiring-dotnet/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 
@@ -139,7 +139,7 @@ GitHub Actions builds, tests, and packs on every push; tags `v*` publish a GitHu
 ### Встановлення
 
 ```bash
-dotnet add package MonoBank.Acquiring
+dotnet add package MonoBankAcquiring
 ```
 
 ### За хвилину

@@ -79,6 +79,7 @@ jobs:
       # nuget.org → Trusted Publishing policy must match:
       #   Owner: ConstantinOr   Repo: monobank-acquiring-dotnet
       #   Workflow: ci.yml      Environment: nuget
+      #   Package glob: MonoBankAcquiring
       - name: NuGet login (OIDC → temp API key)
         id: nuget
         uses: NuGet/login@v1
