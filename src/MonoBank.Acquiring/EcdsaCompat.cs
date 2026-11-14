@@ -239,11 +239,15 @@ internal static class EcdsaCompat
         var r = EncodeInteger(ieee, 0, field);
         var s = EncodeInteger(ieee, field, field);
         var contentLength = r.Length + s.Length;
-        var der = new byte[2 + contentLength];
+        // Supported curves produce at most 136 content bytes (P-521).
+        var headerLength = contentLength < 128 ? 2 : 3;
+        var der = new byte[headerLength + contentLength];
         der[0] = 0x30;
-        der[1] = (byte)contentLength;
-        Buffer.BlockCopy(r, 0, der, 2, r.Length);
-        Buffer.BlockCopy(s, 0, der, 2 + r.Length, s.Length);
+        der[1] = headerLength == 2 ? (byte)contentLength : (byte)0x81;
+        if (headerLength == 3)
+            der[2] = (byte)contentLength;
+        Buffer.BlockCopy(r, 0, der, headerLength, r.Length);
+        Buffer.BlockCopy(s, 0, der, headerLength + r.Length, s.Length);
         return der;
     }
 
@@ -419,7 +423,7 @@ internal static class EcdsaCompat
 
         private void EnsureAvailable(int count)
         {
-            if (_offset + count > _end)
+            if (count < 0 || count > _end - _offset)
                 throw new CryptographicException("Truncated ASN.1 data.");
         }
     }
