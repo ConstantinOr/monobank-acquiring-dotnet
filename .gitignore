@@ -7,3 +7,8 @@ obj/
 .idea/
 *.swp
 .DS_Store
+artifacts/
+*.nupkg
+*.snupkg
+samples/**/appsettings.json
+!samples/**/appsettings.example.json

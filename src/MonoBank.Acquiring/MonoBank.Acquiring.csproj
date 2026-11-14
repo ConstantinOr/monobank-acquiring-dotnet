@@ -7,7 +7,24 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>MonoBank.Acquiring</RootNamespace>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <Version>1.0.0</Version>
+    <Authors>ConstantinOr</Authors>
+    <Company>ConstantinOr</Company>
+    <Description>Full-featured .NET client for the monobank acquiring API (invoices, QR, wallet, subscriptions, webhooks).</Description>
+    <PackageId>MonoBank.Acquiring</PackageId>
+    <PackageTags>monobank;acquiring;payments;fintech;ukraine;dotnet;csharp;webhook</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/ConstantinOr/monobank-acquiring-dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ConstantinOr/monobank-acquiring-dotnet</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="System.Memory" Version="4.6.3" />

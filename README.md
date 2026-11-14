@@ -1,16 +1,56 @@
-# MonoBank.Acquiring
+# monobank-acquiring-dotnet
 
-Full-featured [.NET](https://dotnet.microsoft.com/) client for the complete [monobank acquiring API](https://monobank.ua/api-docs/acquiring).
+A full-featured .NET client for the [monobank acquiring API](https://monobank.ua/api-docs/acquiring).  
+Create invoices, accept card payments on monobank’s hosted page (no PAN/CVV on your side), verify webhooks, wallets, subscriptions, split, POS, and T2P.
 
-**Targets:** `netstandard2.0` · `net10.0` (LTS)
+**Targets:** `netstandard2.0` · `net10.0` (LTS) · **License:** MIT
 
-Invoices, QR, wallet/tokenization, subscriptions, split, monopay, POS, T2P, fiscal checks, statements, webhook verification — one `MonoAcquiringClient`, not an invoice-only wrapper.
+[Українською](#українською) · [English](#english)
 
-[Українською](#monobankacquiring-українською)
+<p align="center">
+  <img src="docs/social-preview.jpg" alt="monobank-acquiring-dotnet" width="720" />
+</p>
 
 ---
 
 ## English
+
+### Run in one minute
+
+```bash
+export MONOBANK_TOKEN=your_x_token_here   # from https://web.monobank.ua/ or test token
+dotnet run --project samples/QuickStart
+```
+
+Or copy `samples/QuickStart/appsettings.example.json` → `appsettings.json` (gitignored) and set `MonoBank:Token`.
+
+The sample prints merchant details, loads the webhook public key, creates a **42.00 UAH** invoice, and prints `pageUrl` — open it to pay on monobank.
+
+```csharp
+using var http = new HttpClient
+{
+    BaseAddress = new Uri(MonoAcquiringOptions.DefaultBaseAddress)
+};
+var mono = new MonoAcquiringClient(http, new MonoAcquiringOptions { Token = token });
+
+var invoice = await mono.CreateInvoiceAsync(new CreateInvoiceRequest
+{
+    Amount = 4200, // minor units: 4200 = 42.00 UAH
+    Ccy = 980,
+    RedirectUrl = "https://example.com/result",
+    WebHookUrl = "https://example.com/mono/webhook",
+});
+
+Console.WriteLine(invoice.PageUrl); // pay.mbnk.biz — hosted checkout
+```
+
+Never commit real tokens. Prefer `MONOBANK_TOKEN`.
+
+### Install
+
+```bash
+dotnet add reference path/to/src/MonoBank.Acquiring/MonoBank.Acquiring.csproj
+```
 
 ### Requirements
 
@@ -19,65 +59,9 @@ Invoices, QR, wallet/tokenization, subscriptions, split, monopay, POS, T2P, fisc
 | Library TFMs | `netstandard2.0`, `net10.0` |
 | Runs on | .NET Framework 4.6.1+, .NET Core 2.0+, .NET 5+ / .NET 10 |
 | Build / tests | .NET 10 SDK |
-| Auth | Merchant `X-Token` from [web.monobank.ua](https://web.monobank.ua/) (or test token from [api.monobank.ua](https://api.monobank.ua/)) |
+| Auth | Merchant `X-Token` |
 
-On `netstandard2.0` the package pulls `System.Text.Json` / `System.Net.Http.Json`. On `net10.0` — BCL only.
-
-### Install
-
-```bash
-dotnet add reference path/to/src/MonoBank.Acquiring/MonoBank.Acquiring.csproj
-```
-
-Repo: https://github.com/ConstantinOr/MonoBank.Acquiring
-
-### Quick start
-
-Amounts are **minor units** (`long`): `4200` = `42.00 UAH`.
-
-```csharp
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using MonoBank.Acquiring;
-
-var http = new HttpClient
-{
-    BaseAddress = new Uri(MonoAcquiringOptions.DefaultBaseAddress)
-};
-var mono = new MonoAcquiringClient(http, new MonoAcquiringOptions
-{
-    Token = token
-});
-
-var invoice = await mono.CreateInvoiceAsync(new CreateInvoiceRequest
-{
-    Amount = 4200,
-    Ccy = 980,
-    RedirectUrl = "https://example.com/result",
-    WebHookUrl = "https://example.com/mono/webhook",
-    MerchantPaymInfo = new MerchantPaymInfo
-    {
-        Reference = "order-15",
-        Destination = "Order #15",
-        BasketOrder = new[]
-        {
-            new BasketItem
-            {
-                Name = "Item",
-                Qty = 2,
-                Sum = 2100,
-                Total = 4200,
-                Code = "sku-1",
-            },
-        },
-    },
-});
-
-// Redirect the buyer to invoice.PageUrl
-```
-
-Prefer `IHttpClientFactory` in production.
+On `netstandard2.0` the package uses `System.Text.Json` / `System.Net.Http.Json`. On `net10.0` — BCL only.
 
 ### API surface
 
@@ -93,48 +77,31 @@ Prefer `IHttpClientFactory` in production.
 | T2P | `GetTerminalsAsync`, `GetT2pPaymentStatusAsync` |
 | Webhook | `WebhookVerifier.Verify`, `InvoiceStatus.Parse` |
 
-- Base URL: `https://api.monobank.ua/`
-- Auth: `X-Token`
-- Optional: `X-Cms`, `X-Cms-Version`
+Base: `https://api.monobank.ua/` · Auth: `X-Token` · Optional: `X-Cms`, `X-Cms-Version`.
 
-This library **receives** payments (acquiring). No personal P2P. Closest outbound flows: refunds (`CancelInvoiceAsync`), split receivers, tips (`TipsEmployeeId`).
-
-### Errors
-
-Non-success → `MonoAcquiringException` with `StatusCode`, `ErrCode`, `ErrText`, raw `Body`.
+This library **receives** payments (acquiring). No personal P2P / Open API currency rates. Closest outbound: refunds, split, tips.
 
 ### Webhooks
 
-Verify `X-Sign` on the **raw** body bytes before parsing. Public key: `GetPubKeyAsync` (`key` = base64 of a PEM SPKI key).
-
 ```csharp
 if (!WebhookVerifier.Verify(body, xSign, pubKey.Key))
-{
-    // reject
-    return;
-}
+    return; // reject
 
 var status = InvoiceStatus.Parse(body);
 ```
 
-### monopay button signature
-
-```csharp
-var signature = MonoPaySigner.Sign(orderJson, requestId, privateKeyPem);
-// UTF-8(orderJson + requestId), ECDSA P-256 / SHA-256, DER, base64
-```
-
 ### PCI
 
+Hosted `pageUrl` checkout → no card data on your site.  
 `PaymentDirectAsync` sends PAN/CVV — only with an active PCI DSS certificate.
 
-### Tests
+### Tests & CI
 
 ```bash
 dotnet test
 ```
 
-Fake `HttpMessageHandler` only — no live monobank calls.
+GitHub Actions builds, tests, and packs on every push; tags `v*` publish a GitHub Release with `.nupkg`.
 
 ### Docs
 
@@ -143,139 +110,27 @@ Fake `HttpMessageHandler` only — no live monobank calls.
 
 ---
 
-## MonoBank.Acquiring (українською)
+## Українською
 
-Повнофункціональний [.NET](https://dotnet.microsoft.com/)-клієнт для повного [API еквайрингу monobank](https://monobank.ua/api-docs/acquiring).
+Повнофункціональний .NET-клієнт для [API еквайрингу monobank](https://monobank.ua/api-docs/acquiring).  
+Рахунки, оплата на сторінці monobank (без PAN/CVV у вас), вебхуки, гаманець, підписки, спліт, POS, T2P.
 
-**Таргети:** `netstandard2.0` · `net10.0` (LTS)
+**Таргети:** `netstandard2.0` · `net10.0` · **Ліцензія:** MIT
 
-Рахунки, QR, гаманець/токенізація, підписки, спліт, monopay, POS, T2P, фіскальні чеки, виписка, перевірка вебхуків — один `MonoAcquiringClient`, не обрізана обгортка над create invoice.
+### За хвилину
 
-### Вимоги
+```bash
+export MONOBANK_TOKEN=your_x_token_here
+dotnet run --project samples/QuickStart
+```
 
-| | |
-|---|---|
-| TFM бібліотеки | `netstandard2.0`, `net10.0` |
-| Працює на | .NET Framework 4.6.1+, .NET Core 2.0+, .NET 5+ / .NET 10 |
-| Збірка / тести | .NET 10 SDK |
-| Авторизація | Merchant `X-Token` з [web.monobank.ua](https://web.monobank.ua/) (або тест з [api.monobank.ua](https://api.monobank.ua/)) |
+Або скопіюйте `appsettings.example.json` → `appsettings.json` (у `.gitignore`) і вкажіть токен. Токен у git не комітьте.
 
-На `netstandard2.0` підтягуються `System.Text.Json` / `System.Net.Http.Json`. На `net10.0` — лише BCL.
-
-### Підключення
+### Підключення / тести
 
 ```bash
 dotnet add reference path/to/src/MonoBank.Acquiring/MonoBank.Acquiring.csproj
-```
-
-Репозиторій: https://github.com/ConstantinOr/MonoBank.Acquiring
-
-### Швидкий старт
-
-Суми — **мінімальні одиниці** (`long`): `4200` = `42.00 грн`.
-
-```csharp
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using MonoBank.Acquiring;
-
-var http = new HttpClient
-{
-    BaseAddress = new Uri(MonoAcquiringOptions.DefaultBaseAddress)
-};
-var mono = new MonoAcquiringClient(http, new MonoAcquiringOptions
-{
-    Token = token
-});
-
-var invoice = await mono.CreateInvoiceAsync(new CreateInvoiceRequest
-{
-    Amount = 4200,
-    Ccy = 980,
-    RedirectUrl = "https://example.com/result",
-    WebHookUrl = "https://example.com/mono/webhook",
-    MerchantPaymInfo = new MerchantPaymInfo
-    {
-        Reference = "order-15",
-        Destination = "Замовлення №15",
-        BasketOrder = new[]
-        {
-            new BasketItem
-            {
-                Name = "Товар",
-                Qty = 2,
-                Sum = 2100,
-                Total = 4200,
-                Code = "sku-1",
-            },
-        },
-    },
-});
-
-// Переадресуйте покупця на invoice.PageUrl
-```
-
-У проді краще `IHttpClientFactory`.
-
-### Покриття API
-
-| Зона | Методи |
-|------|--------|
-| Рахунки | `CreateInvoiceAsync`, `GetInvoiceStatusAsync`, `CancelInvoiceAsync`, `RemoveInvoiceAsync`, `FinalizeInvoiceAsync`, `GetReceiptAsync`, `GetFiscalChecksAsync`, `PaymentDirectAsync`, `SyncPaymentAsync` |
-| QR / мерчант | `GetQrListAsync`, `GetQrDetailsAsync`, `ResetQrAmountAsync`, `GetMerchantDetailsAsync`, `GetStatementAsync`, `GetEmployeesAsync`, `GetSubmerchantsAsync`, `GetPubKeyAsync` |
-| Гаманець | `GetWalletAsync`, `WalletPaymentAsync`, `DeleteCardAsync` |
-| Підписки | `CreateSubscriptionAsync`, `GetSubscriptionStatusAsync`, `GetSubscriptionPaymentsAsync`, `GetSubscriptionsAsync`, `RemoveSubscriptionAsync`, `EditSubscriptionAsync` |
-| Розщеплення | `GetSplitReceiversAsync`, `GetSplitReceiverAsync` |
-| monopay | `ImportMonoPayKeyAsync`, `DeleteMonoPayKeyAsync`, `GetMonoPayKeysAsync`, `MonoPaySigner.Sign` |
-| POS | `CancelPosTransactionAsync`, `GetPosCancelStatusAsync` |
-| T2P | `GetTerminalsAsync`, `GetT2pPaymentStatusAsync` |
-| Webhook | `WebhookVerifier.Verify`, `InvoiceStatus.Parse` |
-
-- База: `https://api.monobank.ua/`
-- Авторизація: `X-Token`
-- Опційно: `X-Cms`, `X-Cms-Version`
-
-Бібліотека **приймає** оплату (еквайринг). Особистих P2P немає. Найближче «вихідне»: повернення (`CancelInvoiceAsync`), спліт-отримувачі, чайові (`TipsEmployeeId`).
-
-### Помилки
-
-Невдалі відповіді → `MonoAcquiringException`: `StatusCode`, `ErrCode`, `ErrText`, сирий `Body`.
-
-### Вебхуки
-
-Перевіряйте `X-Sign` по **сирих** байтах тіла до парсингу. Ключ — `GetPubKeyAsync` (`key` = base64 від PEM SPKI).
-
-```csharp
-if (!WebhookVerifier.Verify(body, xSign, pubKey.Key))
-{
-    // відхилити
-    return;
-}
-
-var status = InvoiceStatus.Parse(body);
-```
-
-### Підпис кнопки monopay
-
-```csharp
-var signature = MonoPaySigner.Sign(orderJson, requestId, privateKeyPem);
-// UTF-8(orderJson + requestId), ECDSA P-256 / SHA-256, DER, base64
-```
-
-### PCI
-
-`PaymentDirectAsync` передає PAN/CVV — лише з активним PCI DSS.
-
-### Тести
-
-```bash
 dotnet test
 ```
 
-Лише фейковий `HttpMessageHandler` — живий monobank не викликається.
-
-### Документація
-
-- [Еквайринг](https://monobank.ua/api-docs/acquiring)
-- [Створення рахунку](https://monobank.ua/api-docs/acquiring/methods/ia/post--api--merchant--invoice--create)
+Деталі API — у англійській секції вище. Документація monobank: [еквайринг](https://monobank.ua/api-docs/acquiring).
