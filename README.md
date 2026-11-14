@@ -1,9 +1,17 @@
 # monobank-acquiring-dotnet
 
-A full-featured .NET client for the [monobank acquiring API](https://monobank.ua/api-docs/acquiring).  
-Create invoices, accept card payments on monobank’s hosted page (no PAN/CVV on your side), verify webhooks, wallets, subscriptions, split, POS, and T2P.
+Unofficial .NET SDK for Monobank Acquiring API. Create invoices, use hosted checkout, and verify ECDSA webhooks.
 
-**Targets:** `netstandard2.0` · `net10.0` (LTS) · **License:** MIT
+Not affiliated with monobank.
+
+[![NuGet](https://img.shields.io/nuget/v/MonoBank.Acquiring.svg?style=flat-square)](https://www.nuget.org/packages/MonoBank.Acquiring)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/MonoBank.Acquiring.svg?style=flat-square)](https://www.nuget.org/packages/MonoBank.Acquiring)
+[![Build](https://img.shields.io/github/actions/workflow/status/ConstantinOr/monobank-acquiring-dotnet/ci.yml?branch=main&style=flat-square&label=build)](https://github.com/ConstantinOr/monobank-acquiring-dotnet/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
+
+**Targets:** `netstandard2.0` · `net10.0` (LTS)
+
+Also covers wallets, subscriptions, split, POS, and T2P — one `MonoAcquiringClient`.
 
 [Українською](#українською) · [English](#english)
 
@@ -15,6 +23,12 @@ Create invoices, accept card payments on monobank’s hosted page (no PAN/CVV on
 
 ## English
 
+### Install
+
+```bash
+dotnet add package MonoBank.Acquiring
+```
+
 ### Run in one minute
 
 ```bash
@@ -22,9 +36,14 @@ export MONOBANK_TOKEN=your_x_token_here   # from https://web.monobank.ua/ or tes
 dotnet run --project samples/QuickStart
 ```
 
-Or copy `samples/QuickStart/appsettings.example.json` → `appsettings.json` (gitignored) and set `MonoBank:Token`.
+Default is **read-only**: merchant details + webhook public key.  
+To create a real invoice:
 
-The sample prints merchant details, loads the webhook public key, creates a **42.00 UAH** invoice, and prints `pageUrl` — open it to pay on monobank.
+```bash
+dotnet run --project samples/QuickStart -- --create-invoice
+```
+
+Or copy `samples/QuickStart/appsettings.example.json` → `appsettings.json` (gitignored) and set `MonoBank:Token`. Never commit real tokens.
 
 ```csharp
 using var http = new HttpClient
@@ -42,14 +61,6 @@ var invoice = await mono.CreateInvoiceAsync(new CreateInvoiceRequest
 });
 
 Console.WriteLine(invoice.PageUrl); // pay.mbnk.biz — hosted checkout
-```
-
-Never commit real tokens. Prefer `MONOBANK_TOKEN`.
-
-### Install
-
-```bash
-dotnet add reference path/to/src/MonoBank.Acquiring/MonoBank.Acquiring.csproj
 ```
 
 ### Requirements
@@ -107,15 +118,29 @@ GitHub Actions builds, tests, and packs on every push; tags `v*` publish a GitHu
 
 - [Acquiring API](https://monobank.ua/api-docs/acquiring)
 - [Invoice create](https://monobank.ua/api-docs/acquiring/methods/ia/post--api--merchant--invoice--create)
+- [NuGet](https://www.nuget.org/packages/MonoBank.Acquiring)
+- [Release v1.0.0](https://github.com/ConstantinOr/monobank-acquiring-dotnet/releases/tag/v1.0.0)
 
 ---
 
 ## Українською
 
-Повнофункціональний .NET-клієнт для [API еквайрингу monobank](https://monobank.ua/api-docs/acquiring).  
-Рахунки, оплата на сторінці monobank (без PAN/CVV у вас), вебхуки, гаманець, підписки, спліт, POS, T2P.
+Неофіційний .NET SDK для [API еквайрингу monobank](https://monobank.ua/api-docs/acquiring). Створення рахунків, hosted checkout і перевірка ECDSA-вебхуків.
+
+Не афілійовано з monobank.
+
+[![NuGet](https://img.shields.io/nuget/v/MonoBank.Acquiring.svg?style=flat-square)](https://www.nuget.org/packages/MonoBank.Acquiring)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/MonoBank.Acquiring.svg?style=flat-square)](https://www.nuget.org/packages/MonoBank.Acquiring)
+[![Build](https://img.shields.io/github/actions/workflow/status/ConstantinOr/monobank-acquiring-dotnet/ci.yml?branch=main&style=flat-square&label=build)](https://github.com/ConstantinOr/monobank-acquiring-dotnet/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 
 **Таргети:** `netstandard2.0` · `net10.0` · **Ліцензія:** MIT
+
+### Встановлення
+
+```bash
+dotnet add package MonoBank.Acquiring
+```
 
 ### За хвилину
 
@@ -124,13 +149,11 @@ export MONOBANK_TOKEN=your_x_token_here
 dotnet run --project samples/QuickStart
 ```
 
-Або скопіюйте `appsettings.example.json` → `appsettings.json` (у `.gitignore`) і вкажіть токен. Токен у git не комітьте.
-
-### Підключення / тести
+За замовчуванням лише merchant info + pubkey (без створення рахунку).  
+Реальний invoice:
 
 ```bash
-dotnet add reference path/to/src/MonoBank.Acquiring/MonoBank.Acquiring.csproj
-dotnet test
+dotnet run --project samples/QuickStart -- --create-invoice
 ```
 
-Деталі API — у англійській секції вище. Документація monobank: [еквайринг](https://monobank.ua/api-docs/acquiring).
+Токен у git не комітьте. Деталі API — в англійській секції. Документація: [еквайринг](https://monobank.ua/api-docs/acquiring).

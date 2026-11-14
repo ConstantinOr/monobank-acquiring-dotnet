@@ -3,6 +3,13 @@ using MonoBank.Acquiring;
 
 // Token: env MONOBANK_TOKEN (preferred) or samples/QuickStart/appsettings.json (gitignored).
 // Get a merchant token at https://web.monobank.ua/ or a test token at https://api.monobank.ua/
+//
+// Default: read-only merchant info + pubkey.
+// Create a real invoice only with: dotnet run --project samples/QuickStart -- --create-invoice
+
+var createInvoice = args.Any(a =>
+    string.Equals(a, "--create-invoice", StringComparison.OrdinalIgnoreCase)
+    || string.Equals(a, "-c", StringComparison.OrdinalIgnoreCase));
 
 var token = Environment.GetEnvironmentVariable("MONOBANK_TOKEN");
 if (string.IsNullOrWhiteSpace(token))
@@ -16,6 +23,9 @@ if (string.IsNullOrWhiteSpace(token) || token.Contains("PUT_YOUR", StringCompari
 
           export MONOBANK_TOKEN=your_token_here
           dotnet run --project samples/QuickStart
+
+        Optional (creates a real invoice):
+          dotnet run --project samples/QuickStart -- --create-invoice
 
         Or copy appsettings.example.json → appsettings.json and set MonoBank:Token.
         """);
@@ -43,6 +53,14 @@ Console.WriteLine();
 Console.WriteLine("Webhook public key…");
 var pub = await mono.GetPubKeyAsync();
 Console.WriteLine($"  key length = {pub.Key?.Length ?? 0} chars (base64 PEM)");
+
+if (!createInvoice)
+{
+    Console.WriteLine();
+    Console.WriteLine("Done (read-only). To create a real invoice:");
+    Console.WriteLine("  dotnet run --project samples/QuickStart -- --create-invoice");
+    return 0;
+}
 
 Console.WriteLine();
 Console.WriteLine("Creating invoice (42.00 UAH)…");
