@@ -15,7 +15,7 @@ public sealed partial class MonoAcquiringClient
 
     public Task<PaymentResult> WalletPaymentAsync(WalletPaymentRequest request, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        Guard.NotNull(request);
         RequireId(request.CardToken, nameof(request.CardToken));
         RequireId(request.InitiationKind, nameof(request.InitiationKind));
         return SendAsync<PaymentResult>(HttpMethod.Post, "api/merchant/wallet/payment", request, cancellationToken);

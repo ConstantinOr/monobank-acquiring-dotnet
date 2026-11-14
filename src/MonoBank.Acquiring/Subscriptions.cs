@@ -4,7 +4,7 @@ public sealed partial class MonoAcquiringClient
 {
     public Task<CreateSubscriptionResponse> CreateSubscriptionAsync(CreateSubscriptionRequest request, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        Guard.NotNull(request);
         RequireId(request.Interval, nameof(request.Interval));
         return SendAsync<CreateSubscriptionResponse>(HttpMethod.Post, "api/merchant/subscription/create", request, cancellationToken);
     }
@@ -71,7 +71,7 @@ public sealed partial class MonoAcquiringClient
 
     public Task EditSubscriptionAsync(EditSubscriptionRequest request, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        Guard.NotNull(request);
         RequireId(request.SubscriptionId, nameof(request.SubscriptionId));
         RequireId(request.Action, nameof(request.Action));
         return SendAsync(HttpMethod.Post, "api/merchant/subscription/edit", request, cancellationToken);

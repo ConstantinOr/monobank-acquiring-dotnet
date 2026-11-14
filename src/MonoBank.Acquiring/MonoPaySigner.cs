@@ -7,14 +7,13 @@ public static class MonoPaySigner
 {
     public static string Sign(string orderJson, string requestId, string privateKeyPem)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(orderJson);
-        ArgumentNullException.ThrowIfNull(requestId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(privateKeyPem);
+        Guard.NotNullOrWhiteSpace(orderJson);
+        Guard.NotNull(requestId);
+        Guard.NotNullOrWhiteSpace(privateKeyPem);
 
         var payload = Encoding.UTF8.GetBytes(orderJson + requestId);
         using var ecdsa = ECDsa.Create();
-        ecdsa.ImportFromPem(privateKeyPem);
-        var der = ecdsa.SignData(payload, HashAlgorithmName.SHA256, DSASignatureFormat.Rfc3279DerSequence);
-        return Convert.ToBase64String(der);
+        EcdsaCompat.ImportPem(ecdsa, privateKeyPem);
+        return Convert.ToBase64String(EcdsaCompat.SignDer(ecdsa, payload));
     }
 }

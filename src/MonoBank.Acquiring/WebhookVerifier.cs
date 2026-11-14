@@ -7,8 +7,8 @@ public static class WebhookVerifier
 {
     public static bool Verify(ReadOnlySpan<byte> body, string xSignBase64, string pubKeyBase64)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(xSignBase64);
-        ArgumentException.ThrowIfNullOrWhiteSpace(pubKeyBase64);
+        Guard.NotNullOrWhiteSpace(xSignBase64);
+        Guard.NotNullOrWhiteSpace(pubKeyBase64);
 
         byte[] pemBytes;
         byte[] signature;
@@ -25,13 +25,13 @@ public static class WebhookVerifier
         using var ecdsa = ECDsa.Create();
         try
         {
-            ecdsa.ImportFromPem(Encoding.UTF8.GetString(pemBytes));
+            EcdsaCompat.ImportPem(ecdsa, Encoding.UTF8.GetString(pemBytes));
         }
-        catch (Exception ex) when (ex is ArgumentException or CryptographicException)
+        catch (Exception ex) when (ex is ArgumentException || ex is CryptographicException)
         {
             throw new ArgumentException("Public key is not a PEM ECDSA key.", ex);
         }
 
-        return ecdsa.VerifyData(body, signature, HashAlgorithmName.SHA256, DSASignatureFormat.Rfc3279DerSequence);
+        return EcdsaCompat.VerifyDer(ecdsa, body.ToArray(), signature);
     }
 }

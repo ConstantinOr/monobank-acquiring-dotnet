@@ -4,7 +4,7 @@ public sealed partial class MonoAcquiringClient
 {
     public async Task<string?> ImportMonoPayKeyAsync(ImportMonoPayKeyRequest request, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        Guard.NotNull(request);
         RequireId(request.KeyValue, nameof(request.KeyValue));
         var response = await SendAsync<MonoPayImportResponse>(HttpMethod.Post, "api/merchant/monopay/pubkey-import", request, cancellationToken).ConfigureAwait(false);
         return response.Result?.KeyId;

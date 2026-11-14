@@ -12,9 +12,9 @@ public sealed partial class MonoAcquiringClient
 
     public MonoAcquiringClient(HttpClient http, MonoAcquiringOptions options)
     {
-        ArgumentNullException.ThrowIfNull(http);
-        ArgumentNullException.ThrowIfNull(options);
-        ArgumentException.ThrowIfNullOrWhiteSpace(options.Token);
+        Guard.NotNull(http);
+        Guard.NotNull(options);
+        Guard.NotNullOrWhiteSpace(options.Token);
         _http = http;
         _options = options;
     }
@@ -24,7 +24,7 @@ public sealed partial class MonoAcquiringClient
         get
         {
             var uri = _http.BaseAddress ?? _options.BaseAddress;
-            return uri.AbsoluteUri.EndsWith('/') ? uri : new Uri(uri.AbsoluteUri + "/");
+            return uri.AbsoluteUri.EndsWith("/", StringComparison.Ordinal) ? uri : new Uri(uri.AbsoluteUri + "/");
         }
     }
 
@@ -50,7 +50,7 @@ public sealed partial class MonoAcquiringClient
     {
         using var response = await SendRawAsync(method, path, body, cancellationToken, query, acceptLanguage).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        var text = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var text = await ReadContentAsync(response.Content, cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(text))
         {
             throw new MonoAcquiringException((int)response.StatusCode, null, null, text, "Monobank acquiring API returned an empty body.");
@@ -75,7 +75,7 @@ public sealed partial class MonoAcquiringClient
     {
         using var response = await SendRawAsync(method, path, body, cancellationToken, acceptLanguage: acceptLanguage).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        var text = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var text = await ReadContentAsync(response.Content, cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(text))
             return new T();
 
@@ -100,7 +100,7 @@ public sealed partial class MonoAcquiringClient
             request.Headers.TryAddWithoutValidation("Accept-Language", acceptLanguage);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         if (body is not null)
-            request.Content = JsonContent.Create(body, options: AcquiringJson.Options);
+            request.Content = JsonContent.Create(body, mediaType: null, options: AcquiringJson.Options);
 
         return await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }
@@ -112,11 +112,11 @@ public sealed partial class MonoAcquiringClient
             return uri;
 
         var parts = new List<string>();
-        foreach (var (name, value) in query)
+        foreach (var pair in query)
         {
-            if (string.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(pair.Value))
                 continue;
-            parts.Add($"{Uri.EscapeDataString(name)}={Uri.EscapeDataString(value)}");
+            parts.Add($"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}");
         }
 
         if (parts.Count == 0)
@@ -132,7 +132,7 @@ public sealed partial class MonoAcquiringClient
 
         var body = response.Content is null
             ? ""
-            : await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            : await ReadContentAsync(response.Content, cancellationToken).ConfigureAwait(false);
         string? code = null;
         string? text = null;
         if (!string.IsNullOrWhiteSpace(body))
@@ -172,6 +172,16 @@ public sealed partial class MonoAcquiringClient
     {
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentException($"{name} is required.", name);
+    }
+
+    private static Task<string> ReadContentAsync(HttpContent content, CancellationToken cancellationToken)
+    {
+#if NET5_0_OR_GREATER
+        return content.ReadAsStringAsync(cancellationToken);
+#else
+        _ = cancellationToken;
+        return content.ReadAsStringAsync();
+#endif
     }
 
     private sealed class ApiErrorBody

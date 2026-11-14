@@ -6,7 +6,7 @@ public sealed partial class MonoAcquiringClient
 {
     public async Task<CreateInvoiceResponse> CreateInvoiceAsync(CreateInvoiceRequest request, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        Guard.NotNull(request);
         return await SendAsync<CreateInvoiceResponse>(HttpMethod.Post, "api/merchant/invoice/create", request, cancellationToken).ConfigureAwait(false);
     }
 
@@ -23,7 +23,7 @@ public sealed partial class MonoAcquiringClient
 
     public async Task<CancelInvoiceResponse> CancelInvoiceAsync(CancelInvoiceRequest request, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        Guard.NotNull(request);
         RequireId(request.InvoiceId, nameof(request.InvoiceId));
         return await SendAsync<CancelInvoiceResponse>(HttpMethod.Post, "api/merchant/invoice/cancel", request, cancellationToken).ConfigureAwait(false);
     }
@@ -36,7 +36,7 @@ public sealed partial class MonoAcquiringClient
 
     public async Task<FinalizeInvoiceResponse> FinalizeInvoiceAsync(FinalizeInvoiceRequest request, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        Guard.NotNull(request);
         RequireId(request.InvoiceId, nameof(request.InvoiceId));
         return await SendAsync<FinalizeInvoiceResponse>(HttpMethod.Post, "api/merchant/invoice/finalize", request, cancellationToken).ConfigureAwait(false);
     }
@@ -67,13 +67,13 @@ public sealed partial class MonoAcquiringClient
     /// <summary>POST /api/merchant/invoice/payment-direct. Body contains PAN and CVV. The merchant needs a PCI DSS certificate.</summary>
     public async Task<PaymentResult> PaymentDirectAsync(PaymentDirectRequest request, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        Guard.NotNull(request);
         return await SendAsync<PaymentResult>(HttpMethod.Post, "api/merchant/invoice/payment-direct", request, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<InvoiceStatus> SyncPaymentAsync(SyncPaymentRequest request, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        Guard.NotNull(request);
         return await SendAsync<InvoiceStatus>(HttpMethod.Post, "api/merchant/invoice/sync-payment", request, cancellationToken).ConfigureAwait(false);
     }
 
