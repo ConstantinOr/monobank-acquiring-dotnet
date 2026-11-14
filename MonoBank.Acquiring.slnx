@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MonoBank.Acquiring/MonoBank.Acquiring.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MonoBank.Acquiring.Tests/MonoBank.Acquiring.Tests.csproj" />
+  </Folder>
+</Solution>
