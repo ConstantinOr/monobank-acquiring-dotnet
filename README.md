@@ -9,7 +9,7 @@ Not affiliated with monobank.
 [![Build](https://img.shields.io/github/actions/workflow/status/ConstantinOr/monobank-acquiring-dotnet/ci.yml?branch=main&style=flat-square&label=build)](https://github.com/ConstantinOr/monobank-acquiring-dotnet/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 
-**Targets:** `netstandard2.0` · `net10.0` (LTS)
+**Targets:** `netstandard2.0` · `net8.0` · `net10.0` (LTS)
 
 Also covers wallets, subscriptions, split, POS, and T2P — one `MonoAcquiringClient`.
 
@@ -29,6 +29,31 @@ Also covers wallets, subscriptions, split, POS, and T2P — one `MonoAcquiringCl
 dotnet add package MonoBankAcquiring
 ```
 
+### ASP.NET DI
+
+```csharp
+builder.Services.AddMonoAcquiring(builder.Configuration);
+// appsettings: { "MonoBank": { "Token": "..." } }
+// or: builder.Services.AddMonoAcquiring(o => o.Token = token);
+
+app.MapPost("/mono/webhook", async (MonoAcquiringClient mono, HttpRequest req) =>
+{
+    using var ms = new MemoryStream();
+    await req.Body.CopyToAsync(ms);
+    var body = ms.ToArray();
+    var pub = await mono.GetPubKeyAsync();
+    if (!req.Headers.TryGetValue("X-Sign", out var sign)
+        || string.IsNullOrWhiteSpace(pub.Key)
+        || !WebhookVerifier.Verify(body, sign.ToString(), pub.Key))
+        return Results.Unauthorized();
+
+    var status = InvoiceStatus.Parse(body);
+    return Results.Ok();
+});
+```
+
+Full sample: `samples/AspNetWebhook` (`dotnet run --project samples/AspNetWebhook`).
+
 ### Run in one minute
 
 ```bash
@@ -43,7 +68,7 @@ To create a real invoice:
 dotnet run --project samples/QuickStart -- --create-invoice
 ```
 
-Or copy `samples/QuickStart/appsettings.example.json` → `appsettings.json` (gitignored) and set `MonoBank:Token`. Never commit real tokens.
+Or copy `samples/*/appsettings.example.json` → `appsettings.json` (gitignored). Never commit real tokens.
 
 ```csharp
 using var http = new HttpClient
@@ -67,12 +92,12 @@ Console.WriteLine(invoice.PageUrl); // pay.mbnk.biz — hosted checkout
 
 | | |
 |---|---|
-| Library TFMs | `netstandard2.0`, `net10.0` |
-| Runs on | .NET Framework 4.6.1+, .NET Core 2.0+, .NET 5+ / .NET 10 |
-| Build / tests | .NET 10 SDK |
+| Library TFMs | `netstandard2.0`, `net8.0`, `net10.0` |
+| Runs on | .NET Framework 4.6.1+, .NET Core 2.0+, .NET 5+ / .NET 8 / .NET 10 |
+| Build / tests | .NET 10 SDK (+ 8 for multi-TFM tests) |
 | Auth | Merchant `X-Token` |
 
-On `netstandard2.0` the package uses `System.Text.Json` / `System.Net.Http.Json`. On `net10.0` — BCL only.
+On `netstandard2.0` the package uses `System.Text.Json` / `System.Net.Http.Json` plus `Microsoft.Extensions.Http`. On `net8`/`net10` Extensions packages are referenced for DI.
 
 ### API surface
 
@@ -134,12 +159,13 @@ GitHub Actions builds, tests, and packs on every push; tags `v*` publish a GitHu
 [![Build](https://img.shields.io/github/actions/workflow/status/ConstantinOr/monobank-acquiring-dotnet/ci.yml?branch=main&style=flat-square&label=build)](https://github.com/ConstantinOr/monobank-acquiring-dotnet/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 
-**Таргети:** `netstandard2.0` · `net10.0` · **Ліцензія:** MIT
+**Таргети:** `netstandard2.0` · `net8.0` · `net10.0` · **Ліцензія:** MIT
 
 ### Встановлення
 
 ```bash
 dotnet add package MonoBankAcquiring
+builder.Services.AddMonoAcquiring(builder.Configuration); // ASP.NET
 ```
 
 ### За хвилину
@@ -147,13 +173,10 @@ dotnet add package MonoBankAcquiring
 ```bash
 export MONOBANK_TOKEN=your_x_token_here
 dotnet run --project samples/QuickStart
+dotnet run --project samples/AspNetWebhook   # invoice + ECDSA webhook
 ```
 
-За замовчуванням лише merchant info + pubkey (без створення рахунку).  
-Реальний invoice:
+За замовчуванням QuickStart лише merchant info + pubkey.  
+Реальний invoice: `-- --create-invoice`. Токен у git не комітьте.
 
-```bash
-dotnet run --project samples/QuickStart -- --create-invoice
-```
-
-Токен у git не комітьте. Деталі API — в англійській секції. Документація: [еквайринг](https://monobank.ua/api-docs/acquiring).
+Деталі API — в англійській секції. Документація: [еквайринг](https://monobank.ua/api-docs/acquiring).

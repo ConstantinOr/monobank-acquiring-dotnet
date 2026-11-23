@@ -11,4 +11,5 @@ artifacts/
 *.nupkg
 *.snupkg
 samples/**/appsettings.json
+samples/**/appsettings.Development.json
 !samples/**/appsettings.example.json

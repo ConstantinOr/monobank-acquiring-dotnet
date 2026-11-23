@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net8.0;net10.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>MonoBank.Acquiring</RootNamespace>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Authors>ConstantinOr</Authors>
     <Company>ConstantinOr</Company>
-    <Description>Full-featured .NET client for the monobank acquiring API (invoices, QR, wallet, subscriptions, webhooks).</Description>
+    <Description>Unofficial .NET SDK for the monobank acquiring API (invoices, QR, wallet, subscriptions, webhooks).</Description>
     <PackageId>MonoBankAcquiring</PackageId>
     <PackageTags>monobank;acquiring;payments;fintech;ukraine;dotnet;csharp;webhook</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -20,10 +20,19 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">

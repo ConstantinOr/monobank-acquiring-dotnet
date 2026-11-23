@@ -7,5 +7,6 @@
   </Folder>
   <Folder Name="/samples/">
     <Project Path="samples/QuickStart/QuickStart.csproj" />
+    <Project Path="samples/AspNetWebhook/AspNetWebhook.csproj" />
   </Folder>
 </Solution>

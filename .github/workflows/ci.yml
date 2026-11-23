@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -27,6 +29,8 @@ jobs:
 
       - name: Restore
         run: dotnet restore MonoBank.Acquiring.slnx
+        env:
+          CI: true
 
       - name: Build
         run: dotnet build MonoBank.Acquiring.slnx -c Release --no-restore
@@ -55,6 +59,8 @@ jobs:
       id-token: write # required for NuGet Trusted Publishing (OIDC)
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -62,6 +68,8 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Pack
+        env:
+          CI: true
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           dotnet pack src/MonoBank.Acquiring/MonoBank.Acquiring.csproj \
